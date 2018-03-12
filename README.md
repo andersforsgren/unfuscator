@@ -10,7 +10,7 @@ A Dotfuscator de-obfuscator.
           
          // Load all files from the directory that have the format Map-1.2.3.xml
          mapping.LoadDotfuscator(MapFileDirectory, 
-            (path, ex) => Console.WriteLine("error loading "+path+" : "+ex), 
+            (path, ex) => Console.WriteLine($"error loading {path} : {ex}"), 
             (path, progress) => Console.WriteLine($"Loading...{path}: {progress*100:F0}%"));
 
          // Create an unfuscator objcect that uses the mapping.         
