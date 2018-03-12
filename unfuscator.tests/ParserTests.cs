@@ -12,6 +12,7 @@ namespace Unfuscator.Tests
         {
             Assert.AreEqual("System.Decimal.op_Division(Decimal, Decimal)", Signature.ParseStackTraceLine("at System.Decimal.op_Division(Decimal d1, Decimal d2)").ToString());
             Assert.AreEqual("System.Decimal.FCallDivide(Decimal&, Decimal, Decimal)", Signature.ParseStackTraceLine("at System.Decimal.FCallDivide(Decimal& result, Decimal d1, Decimal d2)").ToString());
+            Assert.AreEqual("System.Collections.Generic.List`1.Enumerator.MoveNextRare()", Signature.ParseStackTraceLine("at System.Collections.Generic.List`1.Enumerator.MoveNextRare()")); 
         }
 
         [TestMethod]

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
+using System.Xml.XPath;
 
 namespace Unfuscator.Core
 {
@@ -45,7 +47,8 @@ namespace Unfuscator.Core
             {
                 if (methodName != null)
                     throw new ArgumentException("Don't pass method name");
-                methodName = tokenizer.Expect(TokenType.Identifier).ToString(input);
+
+                methodName = ParseQualifiedMethodName(tokenizer, signatureFormat);
             }
             tokenizer.Expect(TokenType.LeftParen);
             var args = ParseArgumentList(tokenizer, TokenType.RightParen, signatureFormat);
@@ -53,7 +56,26 @@ namespace Unfuscator.Core
             return new Signature(methodName, args.ToList());
         }
 
-        private static IReadOnlyList<string> ParseArgumentList(Tokenizer tokenizer, TokenType endToken, SignatureFormat signatureFormat)
+       private static string ParseQualifiedMethodName(Tokenizer tokenizer, SignatureFormat signatureFormat)
+       {
+          StringBuilder result = new StringBuilder();
+          Token? next;
+          do
+          {
+             next = tokenizer.Peek();
+             if (!next.HasValue)
+                tokenizer.Fail("Expected qualified method name, found EOF");
+             if (next.Value.Kind != TokenType.LeftParen)
+             {
+                tokenizer.Next();
+                result.Append(next.Value.ToString(tokenizer.Input));
+             }
+          } while (next.Value.Kind != TokenType.LeftParen);
+
+          return result.ToString();
+       }
+
+       private static IReadOnlyList<string> ParseArgumentList(Tokenizer tokenizer, TokenType endToken, SignatureFormat signatureFormat)
         {
             List<string> args = new List<string>();
             do
@@ -100,7 +122,7 @@ namespace Unfuscator.Core
             return true;
         }
 
-        private static string ParseType(Tokenizer tokenizer, SignatureFormat signatureFormat)
+        private static string ParseType(Tokenizer tokenizer, SignatureFormat signatureFormat, bool allowArray = true)
         {
             var t = tokenizer.Expect(TokenType.Identifier);
             string typeName = t.ToString(tokenizer.Input);//.Replace("/", ".").Replace("+", ".");
@@ -147,7 +169,8 @@ namespace Unfuscator.Core
                 typeName = string.Format("{0}+{1}", typeName, nestedType);
             }
 
-            typeName = typeName + ParseArraySuffix(tokenizer);
+            if (allowArray)
+               typeName = typeName + ParseArraySuffix(tokenizer);
 
             if (tokenizer.Eat(TokenType.Ampersand))
                 typeName += "&";
