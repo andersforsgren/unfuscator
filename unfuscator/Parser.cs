@@ -30,15 +30,15 @@ namespace Unfuscator.Core
 
         private static Signature ParseSignature(string input, SignatureFormat signatureFormat, string methodName = null)
         {
-            try 
-            { 
-               Tokenizer tokenizer = new Tokenizer(input);
-               tokenizer.Eat(TokenType.WhiteSpace);
-               if (signatureFormat.Has(SignatureFormat.AtPrefix))
-               {
-                   tokenizer.Expect(TokenType.Identifier); // "at" or "à" or similar, depending on language 
-                   tokenizer.Expect(TokenType.WhiteSpace);
-               }
+            try
+            {
+                Tokenizer tokenizer = new Tokenizer(input);
+                tokenizer.Eat(TokenType.WhiteSpace);
+                if (signatureFormat.Has(SignatureFormat.AtPrefix))
+                {
+                    tokenizer.Expect(TokenType.Identifier); // "at" or "à" or similar, depending on language 
+                    tokenizer.Expect(TokenType.WhiteSpace);
+                }
                 if (signatureFormat.Has(SignatureFormat.ReturnType))
                 {
                     ParseType(tokenizer, signatureFormat); // Ignore return type.
@@ -57,30 +57,30 @@ namespace Unfuscator.Core
             }
             catch (Exception ex)
             {
-               throw new ArgumentException($"Could not parse signature '{input} (format: {signatureFormat})", ex);
+                throw new ArgumentException($"Could not parse signature '{input} (format: {signatureFormat})", ex);
             }
         }
 
-       private static string ParseQualifiedMethodName(Tokenizer tokenizer, SignatureFormat signatureFormat)
-       {
-          StringBuilder result = new StringBuilder();
-          Token? next;
-          do
-          {
-             next = tokenizer.Peek();
-             if (!next.HasValue)
-                tokenizer.Fail("Expected qualified method name, found EOF");
-             if (next.Value.Kind != TokenType.LeftParen)
-             {
-                tokenizer.Next();
-                result.Append(next.Value.ToString(tokenizer.Input));
-             }
-          } while (next.Value.Kind != TokenType.LeftParen);
+        private static string ParseQualifiedMethodName(Tokenizer tokenizer, SignatureFormat signatureFormat)
+        {
+            StringBuilder result = new StringBuilder();
+            Token? next;
+            do
+            {
+                next = tokenizer.Peek();
+                if (!next.HasValue)
+                    tokenizer.Fail("Expected qualified method name, found EOF");
+                if (next.Value.Kind != TokenType.LeftParen)
+                {
+                    tokenizer.Next();
+                    result.Append(next.Value.ToString(tokenizer.Input));
+                }
+            } while (next.Value.Kind != TokenType.LeftParen);
 
-          return result.ToString();
-       }
+            return result.ToString();
+        }
 
-       private static IReadOnlyList<string> ParseArgumentList(Tokenizer tokenizer, TokenType endToken, SignatureFormat signatureFormat)
+        private static IReadOnlyList<string> ParseArgumentList(Tokenizer tokenizer, TokenType endToken, SignatureFormat signatureFormat)
         {
             List<string> args = new List<string>();
             do
@@ -174,7 +174,7 @@ namespace Unfuscator.Core
             }
 
             if (allowArray)
-               typeName = typeName + ParseArraySuffix(tokenizer);
+                typeName = typeName + ParseArraySuffix(tokenizer);
 
             if (tokenizer.Eat(TokenType.Ampersand))
                 typeName += "&";
@@ -188,10 +188,10 @@ namespace Unfuscator.Core
             {
                 switch (typeName)
                 {
-                   case "int": return x64 ? (unsigned ? "UInt64" : "Int64") : (unsigned ? "UInt32" : "Int32");
-                   default:
-                      throw new ArgumentException($"Bad unsigned type name {typeName}", nameof(typeName));
-                }            
+                    case "int": return x64 ? (unsigned ? "UInt64" : "Int64") : (unsigned ? "UInt32" : "Int32");
+                    default:
+                        throw new ArgumentException($"Bad unsigned type name {typeName}", nameof(typeName));
+                }
             }
             if (unsigned)
             {
