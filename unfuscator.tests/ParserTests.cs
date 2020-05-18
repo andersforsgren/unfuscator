@@ -31,6 +31,9 @@ namespace Unfuscator.Tests
             Assert.AreEqual("X(Int32)", Signature.ParseDotfuscator("string(int32)", "X").ToString());
             Assert.AreEqual("X(Int16)", Signature.ParseDotfuscator("string(int16)", "X").ToString());
             Assert.AreEqual("X(SByte)", Signature.ParseDotfuscator("string(int8)", "X").ToString());
-        }
+            Assert.AreEqual("X(UInt64)", Signature.ParseDotfuscator("string(native unsigned int)", "X").ToString());
+            Assert.AreEqual("X(UInt64)", Signature.ParseDotfuscator("string(unsigned native int)", "X").ToString());
+            Assert.AreEqual("X(Int64)", Signature.ParseDotfuscator("string(native int)", "X").ToString());
+      }
     }
 }

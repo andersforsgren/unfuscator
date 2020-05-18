@@ -31,29 +31,36 @@ namespace Unfuscator.Core
 
         private static Signature ParseSignature(string input, SignatureFormat signatureFormat, string methodName = null)
         {
-            Tokenizer tokenizer = new Tokenizer(input);
-            tokenizer.Eat(TokenType.WhiteSpace);
-            if (signatureFormat.Has(SignatureFormat.AtPrefix))
+            try
             {
-                tokenizer.Expect("at");
-                tokenizer.Expect(TokenType.WhiteSpace);
-            }
+                Tokenizer tokenizer = new Tokenizer(input);
+                tokenizer.Eat(TokenType.WhiteSpace);
+                if (signatureFormat.Has(SignatureFormat.AtPrefix))
+                {
+                    tokenizer.Expect("at");
+                    tokenizer.Expect(TokenType.WhiteSpace);
+                }
 
-            if (signatureFormat.Has(SignatureFormat.ReturnType))
-            {
-                ParseType(tokenizer, signatureFormat); // Ignore return type.
-            }
-            if (signatureFormat.Has(SignatureFormat.MethodName))
-            {
-                if (methodName != null)
-                    throw new ArgumentException("Don't pass method name");
+                if (signatureFormat.Has(SignatureFormat.ReturnType))
+                {
+                    ParseType(tokenizer, signatureFormat); // Ignore return type.
+                }
+                if (signatureFormat.Has(SignatureFormat.MethodName))
+                {
+                    if (methodName != null)
+                        throw new ArgumentException("Don't pass method name");
 
-                methodName = ParseQualifiedMethodName(tokenizer, signatureFormat);
+                    methodName = ParseQualifiedMethodName(tokenizer, signatureFormat);
+                }
+                tokenizer.Expect(TokenType.LeftParen);
+                var args = ParseArgumentList(tokenizer, TokenType.RightParen, signatureFormat);
+                tokenizer.Expect(TokenType.RightParen);
+                return new Signature(methodName, args.ToList());
             }
-            tokenizer.Expect(TokenType.LeftParen);
-            var args = ParseArgumentList(tokenizer, TokenType.RightParen, signatureFormat);
-            tokenizer.Expect(TokenType.RightParen);
-            return new Signature(methodName, args.ToList());
+            catch (Exception ex)
+            {
+               throw new ArgumentException($"Could not parse signature '{input} (format: {signatureFormat})", ex);
+            }
         }
 
        private static string ParseQualifiedMethodName(Tokenizer tokenizer, SignatureFormat signatureFormat)
@@ -126,20 +133,19 @@ namespace Unfuscator.Core
         {
             var t = tokenizer.Expect(TokenType.Identifier);
             string typeName = t.ToString(tokenizer.Input);//.Replace("/", ".").Replace("+", ".");
-            if (typeName == "native")
-            {
-                throw new NotSupportedException("Native int");
-            }
-            if (typeName == "unsigned")
+            bool native = false;
+            bool unsigned = false;
+            while (typeName == "native" || typeName == "unsigned")
             {
                 tokenizer.Expect(TokenType.WhiteSpace);
+                if (typeName == "native")
+                    native = true;
+                if (typeName == "unsigned")
+                    unsigned = true;
                 typeName = tokenizer.Expect(TokenType.Identifier).ToString(tokenizer.Input);
-                typeName = ResolveUnsignedPrimitive(typeName);
             }
-            else
-            {
-                typeName = ResolvePrimitive(typeName);
-            }
+
+            typeName = ResolvePrimitive(typeName, native, unsigned);
 
             var arrayOrGenericInfo = tokenizer.Peek();
 
@@ -178,21 +184,29 @@ namespace Unfuscator.Core
             return typeName;
         }
 
-        private static string ResolveUnsignedPrimitive(string typeName)
+        private static string ResolvePrimitive(string typeName, bool native, bool unsigned, bool x64 = true)
         {
-            switch (typeName)
+            if (native)
             {
-                case "int8": return "Byte";
-                case "int16": return "UInt16";
-                case "int32": return "UInt32";
-                case "int64": return "UInt64";
-                default:
-                    throw new ArgumentException("Bad unsigned type");
+                switch (typeName)
+                {
+                   case "int": return x64 ? (unsigned ? "UInt64" : "Int64") : (unsigned ? "UInt32" : "Int32");
+                   default:
+                      throw new ArgumentException($"Bad unsigned type name {typeName}", nameof(typeName));
+                }            
             }
-        }
-
-        private static string ResolvePrimitive(string typeName)
-        {
+            if (unsigned)
+            {
+                switch (typeName)
+                {
+                    case "int8": return "Byte";
+                    case "int16": return "UInt16";
+                    case "int32": return "UInt32";
+                    case "int64": return "UInt64";
+                    default:
+                        throw new ArgumentException("Bad unsigned type");
+                }
+            }
             switch (typeName)
             {
                 case "float64": return "double";
