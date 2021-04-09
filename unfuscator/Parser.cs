@@ -4,12 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Xml.XPath;
 
 namespace Unfuscator.Core
 {
     [DataContract]
-    [DebuggerDisplay("{ToString()}")]
+    [DebuggerDisplay("{" + nameof(ToString) + "()}")]
     public class Signature
     {
         [DataMember]
@@ -31,15 +30,13 @@ namespace Unfuscator.Core
 
         private static Signature ParseSignature(string input, SignatureFormat signatureFormat, string methodName = null)
         {
-            try
+            Tokenizer tokenizer = new Tokenizer(input);
+            tokenizer.Eat(TokenType.WhiteSpace);
+            if (signatureFormat.Has(SignatureFormat.AtPrefix))
             {
-                Tokenizer tokenizer = new Tokenizer(input);
-                tokenizer.Eat(TokenType.WhiteSpace);
-                if (signatureFormat.Has(SignatureFormat.AtPrefix))
-                {
-                    tokenizer.Expect("at");
-                    tokenizer.Expect(TokenType.WhiteSpace);
-                }
+                tokenizer.Expect(TokenType.Identifier); // "at" or "à" or similar, depending on language 
+                tokenizer.Expect(TokenType.WhiteSpace);
+            }
 
                 if (signatureFormat.Has(SignatureFormat.ReturnType))
                 {
@@ -276,10 +273,10 @@ namespace Unfuscator.Core
             return null;
         }
 
-        public Signature(string methodName, List<string> args)
+        public Signature(string methodName, IEnumerable<string> args)
         {
             MethodName = methodName;
-            Args = args;
+            Args = args.ToList();
         }
 
         public override string ToString()
