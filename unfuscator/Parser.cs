@@ -30,14 +30,15 @@ namespace Unfuscator.Core
 
         private static Signature ParseSignature(string input, SignatureFormat signatureFormat, string methodName = null)
         {
-            Tokenizer tokenizer = new Tokenizer(input);
-            tokenizer.Eat(TokenType.WhiteSpace);
-            if (signatureFormat.Has(SignatureFormat.AtPrefix))
-            {
-                tokenizer.Expect(TokenType.Identifier); // "at" or "à" or similar, depending on language 
-                tokenizer.Expect(TokenType.WhiteSpace);
-            }
-
+            try 
+            { 
+               Tokenizer tokenizer = new Tokenizer(input);
+               tokenizer.Eat(TokenType.WhiteSpace);
+               if (signatureFormat.Has(SignatureFormat.AtPrefix))
+               {
+                   tokenizer.Expect(TokenType.Identifier); // "at" or "à" or similar, depending on language 
+                   tokenizer.Expect(TokenType.WhiteSpace);
+               }
                 if (signatureFormat.Has(SignatureFormat.ReturnType))
                 {
                     ParseType(tokenizer, signatureFormat); // Ignore return type.
