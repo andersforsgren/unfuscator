@@ -25,11 +25,11 @@ namespace Unfuscator.Tests
       [TestMethod]
         public void ParseDotfuscatorSignature()
         {
-            Assert.AreEqual("X(string)", Signature.ParseDotfuscator("string(string)", "X").ToString());
+            Assert.AreEqual("X(String)", Signature.ParseDotfuscator("string(string)", "X").ToString());
             Assert.AreEqual("X(int[])", Signature.ParseDotfuscator("string(int[])", "X").ToString());
             Assert.AreEqual("X(int[][])", Signature.ParseDotfuscator("string(int[][])", "X").ToString());
             Assert.AreEqual("X(int[,])", Signature.ParseDotfuscator("string(int[0...,0...])", "X").ToString());
-            Assert.AreEqual("X(string, ICollection`1)", Signature.ParseDotfuscator("string(string, System.Collections.Generic.ICollection`1<string>)", "X").ToString());
+            Assert.AreEqual("X(String, ICollection`1)", Signature.ParseDotfuscator("string(string, System.Collections.Generic.ICollection`1<string>)", "X").ToString());
             Assert.AreEqual("X(UInt64)", Signature.ParseDotfuscator("string(unsigned int64)", "X").ToString());
             Assert.AreEqual("X(UInt32)", Signature.ParseDotfuscator("string(unsigned int32)", "X").ToString());
             Assert.AreEqual("X(UInt16)", Signature.ParseDotfuscator("string(unsigned int16)", "X").ToString());
